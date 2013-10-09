@@ -1,3 +1,4 @@
+package org.apache.pdfbox.util;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.util;
 
 import java.util.Comparator;
 
@@ -27,9 +27,10 @@ import java.util.Comparator;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.7 $
  */
-public class TextPositionComparator implements Comparator<TextPosition>
+public class SafeTextPositionComparator implements Comparator<TextPosition>
 {
-    public static final TextPositionComparator INSTANCE = new TextPositionComparator();
+    public static final SafeTextPositionComparator INSTANCE = new SafeTextPositionComparator();
+
     /**
      * {@inheritDoc}
      */
@@ -48,42 +49,53 @@ public class TextPositionComparator implements Comparator<TextPosition>
         }
 
         // Get the text direction adjusted coordinates
-        float x1 = pos1.getXDirAdj();
-        float x2 = pos2.getXDirAdj();
-
         float pos1YBottom = pos1.getYDirAdj();
         float pos2YBottom = pos2.getYDirAdj();
         // note that the coordinates have been adjusted so 0,0 is in upper left
-        float pos1YTop = pos1YBottom - pos1.getHeightDir();
-        float pos2YTop = pos2YBottom - pos2.getHeightDir();
 
         float yDifference = Math.abs( pos1YBottom-pos2YBottom);
         //we will do a simple tolerance comparison.
-        if( yDifference < .1 ||
-            (pos2YBottom >= pos1YTop && pos2YBottom <= pos1YBottom) ||
-            (pos1YBottom >= pos2YTop && pos1YBottom <= pos2YBottom))
+        if (yDifference < .1)
         {
-            if( x1 < x2 )
+            float x1 = pos1.getXDirAdj();
+            float x2 = pos2.getXDirAdj();
+
+            float xDifference = Math.abs( x1-x2);
+
+            if ( xDifference < .1)
             {
-                retval = -1;
-            }
-            else if( x1 > x2 )
-            {
-                retval = 1;
+                float pos1Height = pos1.getHeightDir();
+                float pos2Height = pos2.getHeightDir();
+                float heightDifference = Math.abs(pos1Height - pos2Height);
+                if (heightDifference < .1)
+                {
+                    float pos1Width = pos1.getWidthDirAdj();
+                    float pos2Width = pos2.getWidthDirAdj();
+                    float widthDifference = Math.abs(pos1Width - pos2Width);
+                    if (widthDifference < .1)
+                    {
+                        retval = 0;
+                    }
+                    else
+                    {
+                        retval = pos1Width < pos2Width ? -1 : 1;
+                    }
+                }
+                else
+                {
+                    retval = pos1Height < pos2Height ? -1 : 1;
+                }
             }
             else
             {
-                retval = 0;
+                retval = x1 < x2 ? -1 : 1;
             }
-        }
-        else if( pos1YBottom < pos2YBottom )
-        {
-            retval = -1;
         }
         else
         {
-            return 1;
+            retval = pos1YBottom < pos2YBottom ? -1 : 1;
         }
+
         return retval;
     }
 }

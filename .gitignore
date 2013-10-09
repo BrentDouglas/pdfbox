@@ -1,0 +1,24 @@
+# Ant && Maven output
+src/generated
+target
+release.properties
+*.releaseBackup
+*.versionsBackup
+
+# VIM
+*.swp
+
+# JOE
+*~
+
+# IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+idea
+
+# Eclipse
+.metadata
+.project
+.settings
